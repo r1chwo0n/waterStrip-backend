@@ -18,17 +18,17 @@ import 'dotenv/config';
 //   throw new Error("Invalid DB env.");
 // }
 
-// export const connectionString = process.env.DATABASE_URL!;
+export const connectionString = process.env.DATABASE_URL!;
 // console.log("✅ DATABASE_URL:", connectionString);
 
-export const pgConfig = {
-  host: process.env.PG_HOST!,
-  port: parseInt(process.env.PG_PORT!),
-  user: process.env.PG_USER!,
-  password: process.env.PG_PASS!,
-  database: process.env.PG_DB!,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-  family: 4,
-};
+// export const pgConfig = {
+//   host: process.env.PG_HOST!,
+//   port: parseInt(process.env.PG_PORT!),
+//   user: process.env.PG_USER!,
+//   password: process.env.PG_PASS!,
+//   database: process.env.PG_DB!,
+//   ssl: {
+//     rejectUnauthorized: false,
+//   },
+//   family: 4,
+// };
