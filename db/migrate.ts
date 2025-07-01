@@ -4,7 +4,7 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
 import { connectionString } from "./utils";
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString,
   ssl: { rejectUnauthorized: false }
 });
