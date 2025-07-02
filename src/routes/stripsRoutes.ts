@@ -223,7 +223,7 @@ router.get("/predict/:id", async (req, res) => {
 
     // res.json(image);
     const axios = require("axios");
-    const response = await axios.post("http://ml-service:5000/predict", {
+    const response = await axios.post("https://waterstrip-mlservice.onrender.com/predict", {
       image: image,
     });
 
