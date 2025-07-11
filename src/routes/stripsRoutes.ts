@@ -34,7 +34,7 @@ router.post("/", async (req, res, next) => {
     // 🔍 Call ML model
     const axios = require("axios");
     const mlRes = await axios.post(
-      "https://your-ml-service.onrender.com/predict",
+      "https://waterstrip-mlservice.onrender.com/predict",
       {
         image: s_url,
       }
