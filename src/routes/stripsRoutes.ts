@@ -71,6 +71,12 @@ router.post("/", async (req, res, next) => {
     // 🎯 Evaluate คุณภาพโดยใช้ฟังก์ชัน
     await evaluateStripQuality(s_id);
 
+    await dbClient.insert(StripStatus).values({
+      s_id,
+      u_id,
+      status: "private", // ✅ default status
+    });
+
     res.status(201).json({
       msg: "Strip created and evaluated successfully",
       data: {
