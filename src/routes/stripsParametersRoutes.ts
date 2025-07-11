@@ -58,7 +58,7 @@ router.post("/pH", async (req, res, next) => {
 
     // Call the prediction API
     const response = await axios.get(
-      `http://localhost:500/strips/predict/${s_id}`
+      `http://localhost:5000/strips/predict/${s_id}`
     );
     if (response.status !== 200) {
       throw new Error("Error fetching prediction from the API");

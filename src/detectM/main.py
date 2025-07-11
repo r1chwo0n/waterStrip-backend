@@ -1,38 +1,38 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
-import shutil
-import os
+import cloudinary
+import cloudinary.uploader
 import uuid
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # โหลดตัวแปรจาก .env
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 app = FastAPI()
-origins = [
-    "http://localhost:5173",  # หรือ URL ของ React frontend
-    # "https://yourfrontend.com" ถ้า deploy แล้ว
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.post("/api/upload/")
 async def upload_image(file: UploadFile = File(...)):
     try:
-        UPLOAD_DIR = "uploads"
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        # อ่านเนื้อไฟล์จาก UploadFile
+        contents = await file.read()
 
-        # สร้างชื่อไฟล์ใหม่แบบไม่ซ้ำ
-        ext = os.path.splitext(file.filename)[1]
-        new_filename = f"{uuid.uuid4().hex}{ext}"
-        save_path = os.path.join(UPLOAD_DIR, new_filename)
+        # สร้างชื่อแบบสุ่ม
+        unique_name = f"strip_{uuid.uuid4().hex}"
 
-        # บันทึกไฟล์
-        with open(save_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        # อัปโหลดไป Cloudinary
+        result = cloudinary.uploader.upload(contents, public_id=unique_name)
 
-        return {"msg": "Upload successful", "filename": new_filename}
+        # ส่ง URL กลับไปให้ frontend
+        return {
+            "msg": "Upload successful",
+            "url": result["secure_url"]  # <-- frontend เอา URL นี้ไปใช้ต่อ
+        }
     except Exception as e:
         return JSONResponse(content={"msg": "Upload failed", "error": str(e)}, status_code=500)

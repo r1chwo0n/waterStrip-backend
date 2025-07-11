@@ -24,17 +24,29 @@ router.get("/", async (req, res, next) => {
 });
 
 router.post("/", async (req, res, next) => {
-  console.log("Request Body:", req.body);
   try {
     const { b_id, s_latitude, s_longitude, u_id, s_url } = req.body;
 
     if (!b_id || !s_latitude || !s_longitude || !u_id || !s_url) {
-      throw new Error(
-        "Missing required fields: b_id, s_latitude, s_longitude, u_id, s_url"
-      );
+      throw new Error("Missing required fields");
     }
 
-    const result = await dbClient
+    // 🔍 Call ML model
+    const axios = require("axios");
+    const mlRes = await axios.post(
+      "https://your-ml-service.onrender.com/predict",
+      {
+        image: s_url,
+      }
+    );
+
+    const prediction = mlRes.data?.prediction;
+    if (prediction === undefined) {
+      throw new Error("ML service did not return prediction");
+    }
+
+    // 🧾 Insert Strip (ยังไม่ใส่ s_quality/s_qualitycolor)
+    const stripRes = await dbClient
       .insert(Strip)
       .values({
         u_id,
@@ -42,14 +54,29 @@ router.post("/", async (req, res, next) => {
         s_latitude,
         s_longitude,
         s_url,
-        s_quality: "",
-        s_qualitycolor: "#ffffff",
+        s_quality: "", // จะอัปเดตภายหลัง
+        s_qualitycolor: "#ffffff", // จะอัปเดตภายหลัง
       })
       .returning();
 
+    const s_id = stripRes[0].s_id;
+
+    // 🧾 Insert Parameter (เช่น p_id = 1 คือ pH)
+    await dbClient.insert(StripParameter).values({
+      s_id,
+      p_id: 1,
+      sp_value: prediction,
+    });
+
+    // 🎯 Evaluate คุณภาพโดยใช้ฟังก์ชัน
+    await evaluateStripQuality(s_id);
+
     res.status(201).json({
-      msg: "Strip created successfully",
-      data: result[0],
+      msg: "Strip created and evaluated successfully",
+      data: {
+        s_id,
+        prediction,
+      },
     });
   } catch (err) {
     next(err);
@@ -223,9 +250,12 @@ router.get("/predict/:id", async (req, res) => {
 
     // res.json(image);
     const axios = require("axios");
-    const response = await axios.post("https://waterstrip-mlservice.onrender.com/predict", {
-      image: image,
-    });
+    const response = await axios.post(
+      "https://waterstrip-mlservice.onrender.com/predict",
+      {
+        image: image,
+      }
+    );
 
     const prediction = response.data.prediction;
 
