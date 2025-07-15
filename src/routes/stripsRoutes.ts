@@ -40,6 +40,8 @@ router.post("/", async (req, res, next) => {
       }
     );
 
+    console.log("ML Response:", mlRes.data);
+
     const prediction = mlRes.data?.prediction;
     if (prediction === undefined) {
       throw new Error("ML service did not return prediction");
